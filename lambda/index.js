@@ -10,7 +10,7 @@ const LaunchRequestHandler = {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'LaunchRequest';
     },
     handle(handlerInput) {
-        const speakOutput = 'Welcome, you can say Hello or Help. Which would you like to try?';
+        const speakOutput = 'Hola, soy Nova. Puedes preguntarme lo que quieras, por ejemplo: cuál es la capital de Francia. ¿Qué quieres saber?';
 
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -19,6 +19,50 @@ const LaunchRequestHandler = {
     }
 };
 
+const { askGemini } = require('./gemini');
+
+/* *
+ * Handles AskGeminiIntent: takes the free-form question captured in the
+ * "question" slot, asks Gemini, and speaks the answer. The session stays
+ * open so the user can keep asking.
+ * */
+const AskGeminiIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AskGeminiIntent';
+    },
+    async handle(handlerInput) {
+        const question = Alexa.getSlotValue(handlerInput.requestEnvelope, 'question');
+        const reprompt = '¿Quieres preguntarme algo más?';
+
+        if (!question) {
+            const speakOutput = 'No escuché tu pregunta. ¿Qué quieres saber?';
+            return handlerInput.responseBuilder
+                .speak(speakOutput)
+                .reprompt(speakOutput)
+                .getResponse();
+        }
+
+        let speakOutput;
+        try {
+            const answer = await askGemini(question);
+            speakOutput = `${answer} ${reprompt}`;
+        } catch (error) {
+            console.log(`~~~~ Gemini error (${error.code}): ${error.message}`);
+            const messages = {
+                TIMEOUT: 'Me tardé demasiado pensando la respuesta. ¿Puedes intentarlo de nuevo?',
+                BUSY: 'En este momento estoy muy ocupada. Intenta de nuevo en unos segundos.',
+                NO_API_KEY: 'Todavía no tengo configurada mi conexión con la inteligencia artificial.',
+            };
+            speakOutput = messages[error.code] || 'Lo siento, no pude obtener una respuesta. Intenta preguntarme de otra forma.';
+        }
+
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .reprompt(reprompt)
+            .getResponse();
+    }
+};
 const HelloWorldIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -40,7 +84,7 @@ const HelpIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.HelpIntent';
     },
     handle(handlerInput) {
-        const speakOutput = 'You can say hello to me! How can I help?';
+        const speakOutput = 'Puedes hacerme cualquier pregunta. Por ejemplo, di: pregunta cómo funciona la fotosíntesis, o explícame qué es la inteligencia artificial. ¿Qué quieres saber?';
 
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -56,7 +100,7 @@ const CancelAndStopIntentHandler = {
                 || Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.StopIntent');
     },
     handle(handlerInput) {
-        const speakOutput = 'Goodbye!';
+        const speakOutput = '¡Hasta luego!';
 
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -74,7 +118,7 @@ const FallbackIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.FallbackIntent';
     },
     handle(handlerInput) {
-        const speakOutput = 'Sorry, I don\'t know about that. Please try again.';
+        const speakOutput = 'No entendí bien tu pregunta. Intenta empezar con la palabra pregunta, por ejemplo: pregunta cuál es el río más largo del mundo.';
 
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -126,7 +170,7 @@ const ErrorHandler = {
         return true;
     },
     handle(handlerInput, error) {
-        const speakOutput = 'Sorry, I had trouble doing what you asked. Please try again.';
+        const speakOutput = 'Lo siento, tuve un problema para responder. Por favor, inténtalo de nuevo.';
         console.log(`~~~~ Error handled: ${JSON.stringify(error)}`);
 
         return handlerInput.responseBuilder
@@ -144,6 +188,7 @@ const ErrorHandler = {
 exports.handler = Alexa.SkillBuilders.custom()
     .addRequestHandlers(
         LaunchRequestHandler,
+        AskGeminiIntentHandler,
         HelloWorldIntentHandler,
         HelpIntentHandler,
         CancelAndStopIntentHandler,
