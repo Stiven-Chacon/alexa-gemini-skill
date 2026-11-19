@@ -28,6 +28,25 @@
         {
           "name": "AMAZON.NavigateHomeIntent",
           "samples": []
+        },
+        {
+          "name": "AskGeminiIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "pregunta {question}",
+            "pregúntale {question}",
+            "quiero saber {question}",
+            "dime {question}",
+            "explícame {question}",
+            "tengo una pregunta {question}",
+            "responde {question}",
+            "busca {question}"
+          ]
         }
       ],
       "types": [],
