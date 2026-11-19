@@ -19,6 +19,50 @@ const LaunchRequestHandler = {
     }
 };
 
+const { askGemini } = require('./gemini');
+
+/* *
+ * Handles AskGeminiIntent: takes the free-form question captured in the
+ * "question" slot, asks Gemini, and speaks the answer. The session stays
+ * open so the user can keep asking.
+ * */
+const AskGeminiIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AskGeminiIntent';
+    },
+    async handle(handlerInput) {
+        const question = Alexa.getSlotValue(handlerInput.requestEnvelope, 'question');
+        const reprompt = '¿Quieres preguntarme algo más?';
+
+        if (!question) {
+            const speakOutput = 'No escuché tu pregunta. ¿Qué quieres saber?';
+            return handlerInput.responseBuilder
+                .speak(speakOutput)
+                .reprompt(speakOutput)
+                .getResponse();
+        }
+
+        let speakOutput;
+        try {
+            const answer = await askGemini(question);
+            speakOutput = `${answer} ${reprompt}`;
+        } catch (error) {
+            console.log(`~~~~ Gemini error (${error.code}): ${error.message}`);
+            const messages = {
+                TIMEOUT: 'Me tardé demasiado pensando la respuesta. ¿Puedes intentarlo de nuevo?',
+                BUSY: 'En este momento estoy muy ocupada. Intenta de nuevo en unos segundos.',
+                NO_API_KEY: 'Todavía no tengo configurada mi conexión con la inteligencia artificial.',
+            };
+            speakOutput = messages[error.code] || 'Lo siento, no pude obtener una respuesta. Intenta preguntarme de otra forma.';
+        }
+
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .reprompt(reprompt)
+            .getResponse();
+    }
+};
 const HelloWorldIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -144,6 +188,7 @@ const ErrorHandler = {
 exports.handler = Alexa.SkillBuilders.custom()
     .addRequestHandlers(
         LaunchRequestHandler,
+        AskGeminiIntentHandler,
         HelloWorldIntentHandler,
         HelpIntentHandler,
         CancelAndStopIntentHandler,
