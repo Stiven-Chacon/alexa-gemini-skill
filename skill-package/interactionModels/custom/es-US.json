@@ -105,6 +105,58 @@
           ]
         },
         {
+          "name": "AMAZON.YesIntent",
+          "samples": [
+            "sí por favor",
+            "claro",
+            "claro que sí",
+            "dale",
+            "va",
+            "de una",
+            "tengo otra pregunta",
+            "tengo una pregunta",
+            "sí tengo otra",
+            "otra pregunta",
+            "quiero preguntar algo más",
+            "sí quiero"
+          ]
+        },
+        {
+          "name": "AMAZON.NoIntent",
+          "samples": [
+            "no gracias",
+            "nada",
+            "nada más",
+            "no nada",
+            "no quiero nada",
+            "no quiero nada más",
+            "ya no",
+            "ya no gracias",
+            "no por ahora",
+            "eso es todo",
+            "eso sería todo",
+            "es todo",
+            "ya terminé",
+            "ya está",
+            "listo gracias",
+            "estoy bien",
+            "estoy bien así",
+            "así está bien",
+            "no tengo más preguntas",
+            "no tengo otra pregunta",
+            "ninguna",
+            "ninguna más",
+            "por ahora no",
+            "no necesito nada",
+            "no necesito nada más",
+            "ya me voy",
+            "chao",
+            "adiós",
+            "hasta luego",
+            "nos vemos"
+          ]
+        },
+        {
           "name": "AMAZON.FallbackIntent",
           "samples": []
         }
