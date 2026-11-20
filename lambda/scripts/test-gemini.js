@@ -1,43 +1,30 @@
-// Quick local test: asks Gemini a question using the key from the root .env
+// Quick local test: asks Gemini a question through the real use case,
+// using the key from the root .env.
 // Usage: node lambda/scripts/test-gemini.js "tu pregunta"
-const fs = require('fs');
 const path = require('path');
+const { parseEnvFile, getConfig } = require('../src/infrastructure/config/env');
+const { GeminiProvider } = require('../src/infrastructure/ai/GeminiProvider');
+const { AskQuestionUseCase } = require('../src/application/use-cases/AskQuestionUseCase');
 
-const envPath = path.resolve(__dirname, '../../.env');
-const env = Object.fromEntries(
-  fs.readFileSync(envPath, 'utf8')
-    .split(/\r?\n/)
-    .filter((line) => line.includes('=') && !line.trim().startsWith('#'))
-    .map((line) => [line.slice(0, line.indexOf('=')).trim(), line.slice(line.indexOf('=') + 1).trim()])
-);
+const rootEnv = parseEnvFile(path.resolve(__dirname, '../../.env'));
+Object.entries(rootEnv).forEach(([key, value]) => {
+  if (!process.env[key]) process.env[key] = value;
+});
 
-const apiKey = env.GEMINI_API_KEY;
-const model = env.GEMINI_MODEL || 'gemini-3.1-flash-lite';
 const question = process.argv.slice(2).join(' ') || '¿Cuál es la capital de Colombia?';
 
 async function main() {
-  if (!apiKey) throw new Error('Falta GEMINI_API_KEY en el archivo .env');
-
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-  const response = await fetch(url, {
-    method: 'POST',
-    signal: AbortSignal.timeout(15000),
-    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: 'Eres Nova, un asistente de voz. Responde en español, claro y en máximo dos frases.' }] },
-      contents: [{ role: 'user', parts: [{ text: question }] }],
-    }),
+  const config = getConfig();
+  const askQuestion = new AskQuestionUseCase({
+    aiProvider: new GeminiProvider({ apiKey: config.geminiApiKey, model: config.geminiModel }),
   });
 
-  const data = await response.json();
-  if (!response.ok) throw new Error(`Gemini ${response.status}: ${data.error?.message}`);
-
-  const answer = data.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') ?? '(sin respuesta)';
+  const answer = await askQuestion.execute(question);
   console.log(`Pregunta: ${question}`);
   console.log(`Respuesta: ${answer}`);
 }
 
 main().catch((error) => {
-  console.error('Error:', error.message);
+  console.error(`Error (${error.code || 'UNKNOWN'}): ${error.message}`);
   process.exit(1);
 });
