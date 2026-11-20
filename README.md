@@ -44,20 +44,6 @@ flowchart LR
     I --> G[(Google Gemini API)]
 ```
 
-## 📋 Plan de trabajo
-
-- [x] Estructura inicial del proyecto
-- [ ] Configuración de TypeScript, ESLint, Prettier y Jest
-- [ ] Dominio: entidades `Message` y `Conversation`, puertos `AIProvider` y `ConversationRepository`
-- [ ] Casos de uso: hacer una pregunta y reiniciar la conversación
-- [ ] Infraestructura: proveedor de Gemini y memoria en la sesión de Alexa
-- [ ] Handlers de Alexa: bienvenida, pregunta, ayuda, cancelar, salir y errores
-- [ ] Modelo de interacción en español (es-MX y es-ES)
-- [ ] Pruebas unitarias del dominio y los casos de uso
-- [ ] Pipeline de CI con GitHub Actions
-- [ ] Guía de instalación paso a paso
-- [ ] Video demo
-
 ## 🚀 Roadmap futuro
 
 - Pantallas visuales con APL para Echo Show
