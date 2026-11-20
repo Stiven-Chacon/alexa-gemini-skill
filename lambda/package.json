@@ -4,8 +4,6 @@
   "description": "Alexa skill that answers questions with Gemini (Clean Architecture)",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
-    "test:coverage": "jest --coverage",
     "ask:gemini": "node scripts/test-gemini.js"
   },
   "author": "Amazon Alexa",
@@ -14,17 +12,5 @@
     "ask-sdk-core": "^2.7.0",
     "ask-sdk-model": "^1.19.0",
     "aws-sdk": "^2.326.0"
-  },
-  "jest": {
-    "testEnvironment": "node",
-    "roots": [
-      "<rootDir>/tests"
-    ],
-    "collectCoverageFrom": [
-      "src/**/*.js"
-    ]
-  },
-  "devDependencies": {
-    "jest": "^29.7.0"
   }
 }
