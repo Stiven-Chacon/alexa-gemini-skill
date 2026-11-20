@@ -43,6 +43,7 @@ const AskGeminiIntentHandler = {
                 .getResponse();
         }
 
+        const handlerStart = Date.now();
         let speakOutput;
         try {
             const answer = await askGemini(question);
@@ -56,6 +57,7 @@ const AskGeminiIntentHandler = {
             };
             speakOutput = messages[error.code] || 'Lo siento, no pude obtener una respuesta. Intenta preguntarme de otra forma.';
         }
+        console.log(`~~~~ AskGeminiIntent handler total: ${Date.now() - handlerStart} ms`);
 
         return handlerInput.responseBuilder
             .speak(speakOutput)
