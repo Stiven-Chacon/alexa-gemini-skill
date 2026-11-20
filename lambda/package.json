@@ -1,10 +1,10 @@
 {
-  "name": "hello-world",
+  "name": "asistente-nova",
   "version": "1.2.0",
-  "description": "alexa utility for quickly building skills",
+  "description": "Alexa skill that answers questions with Gemini (Clean Architecture)",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "ask:gemini": "node scripts/test-gemini.js"
   },
   "author": "Amazon Alexa",
   "license": "Apache License",

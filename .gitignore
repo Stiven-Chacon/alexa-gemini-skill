@@ -5,3 +5,6 @@ dist/
 coverage/
 *.log
 .DS_Store
+
+# Alexa-hosted builds with Node 16: keep the lambda lockfile out of the repo
+lambda/package-lock.json

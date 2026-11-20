@@ -1,0 +1,22 @@
+{
+  "name": "asistente-nova-workspace",
+  "private": true,
+  "description": "Dev tooling for the asistente nova Alexa skill. Not deployed: Amazon only installs lambda/package.json.",
+  "scripts": {
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "ask:gemini": "node lambda/scripts/test-gemini.js"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "roots": [
+      "<rootDir>/lambda/tests"
+    ],
+    "collectCoverageFrom": [
+      "lambda/src/**/*.js"
+    ]
+  }
+}
