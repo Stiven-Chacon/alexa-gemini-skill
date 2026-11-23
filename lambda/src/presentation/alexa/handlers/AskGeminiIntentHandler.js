@@ -11,8 +11,10 @@ const { QuestionErrorCode } = require('../../../domain/errors');
 function createAskGeminiIntentHandler({ askQuestion, logger = console }) {
   return {
     canHandle(handlerInput) {
-      return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
-        && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AskGeminiIntent';
+      return (
+        Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest' &&
+        Alexa.getIntentName(handlerInput.requestEnvelope) === 'AskGeminiIntent'
+      );
     },
     async handle(handlerInput) {
       const handlerStart = Date.now();
@@ -34,10 +36,7 @@ function createAskGeminiIntentHandler({ askQuestion, logger = console }) {
       }
 
       logger.log(`~~~~ AskGeminiIntent handler total: ${Date.now() - handlerStart} ms`);
-      return handlerInput.responseBuilder
-        .speak(speakOutput)
-        .reprompt(reprompt)
-        .getResponse();
+      return handlerInput.responseBuilder.speak(speakOutput).reprompt(reprompt).getResponse();
     },
   };
 }

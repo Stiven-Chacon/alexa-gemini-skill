@@ -1,5 +1,5 @@
 const { Question } = require('../../src/domain/entities/Question');
-const { InvalidQuestionError, QuestionErrorCode } = require('../../src/domain/errors');
+const { QuestionErrorCode } = require('../../src/domain/errors');
 
 describe('Question', () => {
   it('trims and collapses spaces', () => {
@@ -7,8 +7,12 @@ describe('Question', () => {
   });
 
   it.each([undefined, null, '', '   '])('rejects an empty question (%p)', (raw) => {
-    expect(() => Question.create(raw)).toThrow(InvalidQuestionError);
-    try { Question.create(raw); } catch (error) { expect(error.code).toBe(QuestionErrorCode.EMPTY); }
+    expect(() => Question.create(raw)).toThrow(
+      expect.objectContaining({
+        name: 'InvalidQuestionError',
+        code: QuestionErrorCode.EMPTY,
+      })
+    );
   });
 
   it('rejects a question that is too long', () => {

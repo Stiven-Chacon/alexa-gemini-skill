@@ -21,16 +21,20 @@ describe('parseEnvFile', () => {
 
   it('parses keys, skips comments and blank lines, keeps quotes and allows = in values', () => {
     jest.spyOn(fs, 'existsSync').mockReturnValue(true);
-    jest.spyOn(fs, 'readFileSync').mockReturnValue([
-      '# this is a comment',
-      '',
-      '  # indented comment',
-      'GEMINI_API_KEY=from-file',
-      'GEMINI_MODEL="quoted-model"',
-      'NOTE=foo=bar=baz',
-      'SPACED =  value with spaces  ',
-      'NOEQUALS',
-    ].join('\n'));
+    jest
+      .spyOn(fs, 'readFileSync')
+      .mockReturnValue(
+        [
+          '# this is a comment',
+          '',
+          '  # indented comment',
+          'GEMINI_API_KEY=from-file',
+          'GEMINI_MODEL="quoted-model"',
+          'NOTE=foo=bar=baz',
+          'SPACED =  value with spaces  ',
+          'NOEQUALS',
+        ].join('\n')
+      );
 
     expect(parseEnvFile('fake.env')).toEqual({
       GEMINI_API_KEY: 'from-file',
@@ -54,9 +58,7 @@ describe('getConfig', () => {
 
   beforeEach(() => {
     envKeys.forEach((key) => {
-      previous[key] = Object.prototype.hasOwnProperty.call(process.env, key)
-        ? process.env[key]
-        : undefined;
+      previous[key] = Object.prototype.hasOwnProperty.call(process.env, key) ? process.env[key] : undefined;
       delete process.env[key];
     });
     resetConfigCache();

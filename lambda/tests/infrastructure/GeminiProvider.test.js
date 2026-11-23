@@ -20,7 +20,9 @@ function mockHttps(responses) {
     const req = new EventEmitter();
     let payload = '';
 
-    req.write = jest.fn((chunk) => { payload += chunk; });
+    req.write = jest.fn((chunk) => {
+      payload += chunk;
+    });
     req.destroy = jest.fn((err) => {
       if (err) req.emit('error', err);
     });
@@ -94,9 +96,7 @@ describe('GeminiProvider', () => {
     await makeProvider().ask({ text: 'cuál es la capital de Francia' });
 
     expect(calls).toHaveLength(1);
-    expect(calls[0].url).toBe(
-      `https://generativelanguage.googleapis.com/v1beta/models/${TEST_MODEL}:generateContent`
-    );
+    expect(calls[0].url).toBe(`https://generativelanguage.googleapis.com/v1beta/models/${TEST_MODEL}:generateContent`);
     expect(calls[0].options.method).toBe('POST');
     expect(calls[0].options.headers['Content-Type']).toBe('application/json');
     expect(calls[0].options.headers['x-goog-api-key']).toBe(TEST_KEY);
@@ -152,10 +152,16 @@ describe('GeminiProvider', () => {
       { status: 503, json: { error: { message: 'still unavailable' } } },
     ]);
 
-    const promise = makeProvider().ask({ text: 'río' });
-    const assertion = expect(promise).rejects.toMatchObject({ code: AIErrorCode.BUSY });
+    const settled = makeProvider()
+      .ask({ text: 'río' })
+      .then(
+        (value) => ({ ok: true, value }),
+        (error) => ({ ok: false, error })
+      );
     await jest.advanceTimersByTimeAsync(300);
-    await assertion;
+    const result = await settled;
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatchObject({ code: AIErrorCode.BUSY });
     expect(calls).toHaveLength(2);
   });
 
@@ -173,10 +179,16 @@ describe('GeminiProvider', () => {
     jest.useFakeTimers();
     mockHttps({ hang: true });
 
-    const promise = makeProvider({ options: { totalBudgetMs: 1000 } }).ask({ text: 'río' });
-    const assertion = expect(promise).rejects.toMatchObject({ code: AIErrorCode.TIMEOUT, name: 'AIProviderError' });
+    const settled = makeProvider({ options: { totalBudgetMs: 1000 } })
+      .ask({ text: 'río' })
+      .then(
+        (value) => ({ ok: true, value }),
+        (error) => ({ ok: false, error })
+      );
     await jest.advanceTimersByTimeAsync(1000);
-    await assertion;
+    const result = await settled;
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatchObject({ code: AIErrorCode.TIMEOUT, name: 'AIProviderError' });
     expect(https.request).toHaveBeenCalledTimes(1);
   });
 

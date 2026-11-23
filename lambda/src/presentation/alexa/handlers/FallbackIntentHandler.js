@@ -3,14 +3,13 @@ const messages = require('../messages');
 
 const FallbackIntentHandler = {
   canHandle(handlerInput) {
-    return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
-      && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.FallbackIntent';
+    return (
+      Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest' &&
+      Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.FallbackIntent'
+    );
   },
   handle(handlerInput) {
-    return handlerInput.responseBuilder
-      .speak(messages.FALLBACK)
-      .reprompt(messages.FALLBACK)
-      .getResponse();
+    return handlerInput.responseBuilder.speak(messages.FALLBACK).reprompt(messages.FALLBACK).getResponse();
   },
 };
 

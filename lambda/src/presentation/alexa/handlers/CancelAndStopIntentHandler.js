@@ -8,14 +8,13 @@ const CLOSING_INTENTS = ['AMAZON.CancelIntent', 'AMAZON.StopIntent', 'AMAZON.NoI
  * */
 const CancelAndStopIntentHandler = {
   canHandle(handlerInput) {
-    return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
-      && CLOSING_INTENTS.includes(Alexa.getIntentName(handlerInput.requestEnvelope));
+    return (
+      Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest' &&
+      CLOSING_INTENTS.includes(Alexa.getIntentName(handlerInput.requestEnvelope))
+    );
   },
   handle(handlerInput) {
-    return handlerInput.responseBuilder
-      .speak(messages.GOODBYE)
-      .withShouldEndSession(true)
-      .getResponse();
+    return handlerInput.responseBuilder.speak(messages.GOODBYE).withShouldEndSession(true).getResponse();
   },
 };
 

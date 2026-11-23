@@ -1,4 +1,7 @@
-const { CancelAndStopIntentHandler, CLOSING_INTENTS } = require('../../../src/presentation/alexa/handlers/CancelAndStopIntentHandler');
+const {
+  CancelAndStopIntentHandler,
+  CLOSING_INTENTS,
+} = require('../../../src/presentation/alexa/handlers/CancelAndStopIntentHandler');
 const messages = require('../../../src/presentation/alexa/messages');
 const { buildHandlerInput } = require('../../helpers/handlerInput');
 

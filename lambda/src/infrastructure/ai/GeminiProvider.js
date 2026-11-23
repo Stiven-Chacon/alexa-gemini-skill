@@ -41,13 +41,17 @@ function postJson(url, body, headers, timeoutMs, agent) {
       },
       (response) => {
         let data = '';
-        response.on('data', (chunk) => { data += chunk; });
+        response.on('data', (chunk) => {
+          data += chunk;
+        });
         response.on('end', () => {
           clearTimeout(timer);
           try {
             resolve({ status: response.statusCode, json: JSON.parse(data) });
-          } catch (error) {
-            reject(new AIProviderError(AIErrorCode.API_ERROR, `Invalid JSON from Gemini (status ${response.statusCode})`));
+          } catch {
+            reject(
+              new AIProviderError(AIErrorCode.API_ERROR, `Invalid JSON from Gemini (status ${response.statusCode})`)
+            );
           }
         });
       }
@@ -103,12 +107,19 @@ class GeminiProvider extends AIProvider {
       try {
         ({ status, json } = await postJson(url, body, { 'x-goog-api-key': this.apiKey }, remaining, this.agent));
       } finally {
-        this.logger.log(`~~~~ generateContent attempt ${attempt} (${this.model}): ${Date.now() - callStart} ms, status ${status || 'n/a'}`);
+        this.logger.log(
+          `~~~~ generateContent attempt ${attempt} (${this.model}): ${Date.now() - callStart} ms, status ${status || 'n/a'}`
+        );
       }
 
       if (status === 200) {
-        const parts = (json.candidates && json.candidates[0] && json.candidates[0].content && json.candidates[0].content.parts) || [];
-        const answer = parts.map((part) => part.text || '').join(' ').trim();
+        const parts =
+          (json.candidates && json.candidates[0] && json.candidates[0].content && json.candidates[0].content.parts) ||
+          [];
+        const answer = parts
+          .map((part) => part.text || '')
+          .join(' ')
+          .trim();
         if (!answer) {
           throw new AIProviderError(AIErrorCode.EMPTY, 'Empty answer from Gemini');
         }
