@@ -1,0 +1,11 @@
+node_modules
+coverage
+lambda/coverage
+lambda/node_modules
+package-lock.json
+lambda/package-lock.json
+lambda/package.json
+.ask
+dist
+skill-package
+.env
