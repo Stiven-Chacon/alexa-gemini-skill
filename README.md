@@ -4,34 +4,47 @@ Skill personal de Alexa en español que responde preguntas usando la IA de **Goo
 
 Es un proyecto **open source**: quien quiera usarla despliega su propia copia con su propia API key de Gemini.
 
-> 🚧 Proyecto en construcción. Este documento describe lo que se va a realizar.
+> El skill ya responde preguntas con Gemini. El plan de trabajo más abajo indica lo que está listo y lo que falta.
 
-## 🎯 Objetivo
+## Objetivo
 
 - Hacer preguntas a Alexa en lenguaje natural y recibir respuestas generadas por Gemini.
-- Mantener el contexto de la conversación durante la sesión.
 - Respuestas cortas y naturales, pensadas para escucharse.
 - Código limpio, probado y fácil de desplegar.
+- Más adelante, mantener el contexto de la conversación durante la sesión (aún no está implementado).
 
-## 🛠️ Stack
+## Qué hace hoy
 
-- **Lenguaje:** TypeScript sobre Node.js
-- **Alexa:** ASK SDK (`ask-sdk-core`) y ASK CLI
-- **IA:** Google Gemini (`@google/genai`)
-- **Hosting:** Alexa-hosted o AWS Lambda
-- **Calidad:** Jest, ESLint y Prettier
-- **CI:** GitHub Actions
+- Invocación: **asistente nova**, locale **es-US**.
+- Preguntas en lenguaje libre (`AskGeminiIntent`).
+- Tras cada respuesta, pregunta si quieres algo más: **sí** sigue la conversación y **no** (u otras negaciones) cierra la sesión.
+- Ayuda, cancelar, salir y mensajes de error claros (timeout, servicio ocupado, pregunta vacía o demasiado larga, etc.).
+- Llamadas a Gemini con conexión persistente (keep-alive), presupuesto total de 7 segundos y un reintento si la API responde 503 o 429.
 
-## 🏗️ Arquitectura
+## Stack
 
-Se usará **Arquitectura Limpia**, con las dependencias apuntando siempre hacia el dominio:
+- **Lenguaje:** JavaScript (Node.js, CommonJS). La migración a TypeScript está prevista.
+- **Alexa:** ASK SDK (`ask-sdk-core`) y ASK CLI.
+- **IA:** Google Gemini, llamado con el módulo nativo `https` (keep-alive). No se usa el paquete `@google/genai`.
+- **Modelo por defecto:** `gemini-3.1-flash-lite` (configurable con `GEMINI_MODEL`).
+- **Hosting:** skill Alexa-hosted (AWS Lambda).
+- **Calidad:** Jest 29 en la raíz del repositorio. ESLint y Prettier están pendientes.
+- **CI:** GitHub Actions, pendiente.
+
+El builder de Alexa-hosted usa **Node 16**. Por eso `lambda/package.json` solo incluye dependencias de runtime. Jest y los scripts de desarrollo viven en el `package.json` de la raíz, que Amazon no instala.
+
+## Arquitectura
+
+El código del Lambda sigue **Arquitectura Limpia**, con las dependencias apuntando siempre hacia el dominio:
 
 ```
 lambda/src/
-├── domain/          # Entidades, puertos (interfaces) y errores del negocio
-├── application/     # Casos de uso
-├── infrastructure/  # Gemini, persistencia de sesión y configuración
-└── presentation/    # Handlers de Alexa
+├── domain/            # Entidad Question, puerto AIProvider y errores
+├── application/       # Caso de uso AskQuestionUseCase
+├── infrastructure/    # GeminiProvider, configuración y persistencia (aún vacía)
+├── presentation/      # Handlers de Alexa, messages y speech
+└── container.js       # Composición de dependencias
+lambda/tests/          # Pruebas unitarias (Jest, se ejecutan desde la raíz)
 ```
 
 ```mermaid
@@ -44,27 +57,30 @@ flowchart LR
     I --> G[(Google Gemini API)]
 ```
 
-## 📋 Plan de trabajo
+## Cómo empezar
 
-- [x] Estructura inicial del proyecto
-- [ ] Configuración de TypeScript, ESLint, Prettier y Jest
-- [ ] Dominio: entidades `Message` y `Conversation`, puertos `AIProvider` y `ConversationRepository`
-- [ ] Casos de uso: hacer una pregunta y reiniciar la conversación
-- [ ] Infraestructura: proveedor de Gemini y memoria en la sesión de Alexa
-- [ ] Handlers de Alexa: bienvenida, pregunta, ayuda, cancelar, salir y errores
-- [ ] Modelo de interacción en español (es-MX y es-ES)
-- [ ] Pruebas unitarias del dominio y los casos de uso
-- [ ] Pipeline de CI con GitHub Actions
-- [ ] Guía de instalación paso a paso
-- [ ] Video demo
+1. Clona el repositorio y, en la raíz, copia `.env.example` a `.env`. Completa `GEMINI_API_KEY` con tu clave de [Google AI Studio](https://aistudio.google.com/).
+2. Instala las dependencias de desarrollo y ejecuta las pruebas:
 
-## 🚀 Roadmap futuro
+```bash
+npm install
+npm test
+npm run test:coverage
+```
 
-- Pantallas visuales con APL para Echo Show
-- Memoria persistente con DynamoDB
-- Panel web en Next.js para configurar la skill
+3. Para probar Gemini en local (usa el `.env` de la raíz):
 
-## 🔐 Variables de entorno
+```bash
+npm run ask:gemini -- "¿Cuál es el río más largo del mundo?"
+```
+
+La API key se configura fuera del repositorio (variable de entorno o archivo `.env` local, que está en `.gitignore`). Nunca se sube a GitHub.
+
+### Despliegue
+
+Este skill está pensado para **Alexa-hosted**. El código del Lambda se publica haciendo push al repositorio CodeCommit que Alexa asocia a la skill. Si cambias el modelo de interacción (`skill-package/interactionModels`), hay que pulsar **Build skill** en la consola de Alexa para que el cambio tenga efecto. Después puedes probarla en la pestaña **Test**.
+
+## Variables de entorno
 
 Ver `.env.example`. La API key nunca se sube al repositorio.
 
@@ -73,6 +89,6 @@ Ver `.env.example`. La API key nunca se sube al repositorio.
 | `GEMINI_API_KEY` | API key gratuita de Google AI Studio           |
 | `GEMINI_MODEL`   | Modelo a usar (por defecto `gemini-2.5-flash`) |
 
-## 📄 Licencia
+## Licencia
 
 MIT © 2026 [Stiven Chacon](https://github.com/Stiven-Chacon) · [Portafolio](https://stivenchacon.netlify.app/)
