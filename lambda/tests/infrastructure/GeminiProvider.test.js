@@ -107,6 +107,50 @@ describe('GeminiProvider', () => {
     });
   });
 
+  it('sends the conversation history before the new question, with Gemini roles', async () => {
+    const { calls } = mockHttps({ status: 200, json: successJson('Unos 7 000 km.') });
+    const history = [
+      { role: 'user', text: 'río más largo' },
+      { role: 'model', text: 'El Amazonas.' },
+    ];
+
+    await makeProvider().ask({ text: 'y cuánto mide' }, history);
+
+    expect(calls[0].payload.contents).toEqual([
+      { role: 'user', parts: [{ text: 'río más largo' }] },
+      { role: 'model', parts: [{ text: 'El Amazonas.' }] },
+      { role: 'user', parts: [{ text: 'y cuánto mide' }] },
+    ]);
+  });
+
+  it.each([undefined, null, 'no es una lista'])('ignores an invalid history (%p)', async (history) => {
+    const { calls } = mockHttps({ status: 200, json: successJson('ok') });
+
+    await makeProvider().ask({ text: 'hola' }, history);
+
+    expect(calls[0].payload.contents).toEqual([{ role: 'user', parts: [{ text: 'hola' }] }]);
+  });
+
+  it('sends the same history again when it retries', async () => {
+    jest.useFakeTimers();
+    const { calls } = mockHttps([
+      { status: 429, json: { error: { message: 'quota' } } },
+      { status: 200, json: successJson('ok') },
+    ]);
+    const history = [
+      { role: 'user', text: 'hola' },
+      { role: 'model', text: 'Hola.' },
+    ];
+
+    const promise = makeProvider().ask({ text: 'otra' }, history);
+    await jest.advanceTimersByTimeAsync(300);
+    await promise;
+
+    expect(calls).toHaveLength(2);
+    expect(calls[1].payload.contents).toEqual(calls[0].payload.contents);
+    expect(calls[1].payload.contents).toHaveLength(3);
+  });
+
   it('fails with EMPTY when the answer has no text', async () => {
     mockHttps({ status: 200, json: { candidates: [{ content: { parts: [{ text: '   ' }] } }] } });
     await expect(makeProvider().ask({ text: 'hola' })).rejects.toMatchObject({ code: AIErrorCode.EMPTY });
