@@ -84,10 +84,10 @@ Este skill está pensado para **Alexa-hosted**. El código del Lambda se publica
 
 Ver `.env.example`. La API key nunca se sube al repositorio.
 
-| Variable | Descripción |
-| --- | --- |
-| `GEMINI_API_KEY` | API key gratuita de Google AI Studio |
-| `GEMINI_MODEL` | Modelo a usar (por defecto `gemini-3.1-flash-lite`) |
+| Variable         | Descripción                                    |
+| ---------------- | ---------------------------------------------- |
+| `GEMINI_API_KEY` | API key gratuita de Google AI Studio           |
+| `GEMINI_MODEL`   | Modelo a usar (por defecto `gemini-2.5-flash`) |
 
 ## Licencia
 
