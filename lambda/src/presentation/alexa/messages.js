@@ -10,7 +10,8 @@ module.exports = Object.freeze({
   YES_REPROMPT: '¿Qué quieres saber?',
   HELP: 'Puedes hacerme cualquier pregunta. Por ejemplo, di: pregunta cómo funciona la fotosíntesis, o explícame qué es la inteligencia artificial. ¿Qué quieres saber?',
   GOODBYE: '¡Hasta luego!',
-  FALLBACK: 'No entendí bien tu pregunta. Intenta empezar con la palabra pregunta, por ejemplo: pregunta cuál es el río más largo del mundo.',
+  FALLBACK:
+    'No entendí bien tu pregunta. Intenta empezar con la palabra pregunta, por ejemplo: pregunta cuál es el río más largo del mundo.',
   UNHANDLED: 'No sé hacer eso todavía. Puedes preguntarme lo que quieras.',
   GENERIC_ERROR: 'Lo siento, tuve un problema para responder. Por favor, inténtalo de nuevo.',
   AI_ERRORS: Object.freeze({

@@ -5,8 +5,14 @@ const messages = require('../../src/presentation/alexa/messages');
 function buildInput(question) {
   const response = {};
   const responseBuilder = {
-    speak: jest.fn((text) => { response.speak = text; return responseBuilder; }),
-    reprompt: jest.fn((text) => { response.reprompt = text; return responseBuilder; }),
+    speak: jest.fn((text) => {
+      response.speak = text;
+      return responseBuilder;
+    }),
+    reprompt: jest.fn((text) => {
+      response.reprompt = text;
+      return responseBuilder;
+    }),
     getResponse: jest.fn(() => response),
   };
   const slots = question === undefined ? {} : { question: { name: 'question', value: question } };
@@ -36,20 +42,25 @@ describe('AskGeminiIntentHandler', () => {
   });
 
   it('asks again when the question is empty', async () => {
-    const askQuestion = { execute: jest.fn().mockRejectedValue(new InvalidQuestionError(QuestionErrorCode.EMPTY, 'empty')) };
+    const askQuestion = {
+      execute: jest.fn().mockRejectedValue(new InvalidQuestionError(QuestionErrorCode.EMPTY, 'empty')),
+    };
     const handler = createAskGeminiIntentHandler({ askQuestion, logger: silentLogger });
 
     const response = await handler.handle(buildInput(undefined));
     expect(response.speak).toBe(messages.NO_QUESTION);
   });
 
-  it.each([AIErrorCode.TIMEOUT, AIErrorCode.BUSY, AIErrorCode.NO_API_KEY])('speaks a friendly message for %s', async (code) => {
-    const askQuestion = { execute: jest.fn().mockRejectedValue(new AIProviderError(code, 'x')) };
-    const handler = createAskGeminiIntentHandler({ askQuestion, logger: silentLogger });
+  it.each([AIErrorCode.TIMEOUT, AIErrorCode.BUSY, AIErrorCode.NO_API_KEY])(
+    'speaks a friendly message for %s',
+    async (code) => {
+      const askQuestion = { execute: jest.fn().mockRejectedValue(new AIProviderError(code, 'x')) };
+      const handler = createAskGeminiIntentHandler({ askQuestion, logger: silentLogger });
 
-    const response = await handler.handle(buildInput('hola'));
-    expect(response.speak).toBe(messages.AI_ERRORS[code]);
-  });
+      const response = await handler.handle(buildInput('hola'));
+      expect(response.speak).toBe(messages.AI_ERRORS[code]);
+    }
+  );
 
   it('falls back to a default message for unknown errors', async () => {
     const askQuestion = { execute: jest.fn().mockRejectedValue(new Error('boom')) };

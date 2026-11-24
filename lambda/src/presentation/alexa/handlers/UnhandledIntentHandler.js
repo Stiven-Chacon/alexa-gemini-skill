@@ -11,10 +11,7 @@ const UnhandledIntentHandler = {
   },
   handle(handlerInput) {
     console.log(`~~~~ Unhandled intent: ${Alexa.getIntentName(handlerInput.requestEnvelope)}`);
-    return handlerInput.responseBuilder
-      .speak(messages.UNHANDLED)
-      .reprompt(messages.LAUNCH_REPROMPT)
-      .getResponse();
+    return handlerInput.responseBuilder.speak(messages.UNHANDLED).reprompt(messages.LAUNCH_REPROMPT).getResponse();
   },
 };
 

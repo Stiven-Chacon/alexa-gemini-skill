@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - 'feature/**'
+      - 'hotfix/**'
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - name: Install root dev dependencies
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Check formatting
+        run: npm run format:check
+      - name: Detect hotfix
+        id: hotfix
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            BRANCH_NAME="${HEAD_REF:-}"
+          else
+            BRANCH_NAME="${REF_NAME:-}"
+          fi
+
+          skip=false
+          if printf '%s' "$BRANCH_NAME" | grep -qi hotfix; then
+            skip=true
+          fi
+
+          echo "skip=$skip" >> "$GITHUB_OUTPUT"
+      - name: Test
+        if: steps.hotfix.outputs.skip != 'true'
+        run: npm test
+      - name: Notice skipped tests
+        if: steps.hotfix.outputs.skip == 'true'
+        run: echo '::notice::Tests skipped (hotfix)'

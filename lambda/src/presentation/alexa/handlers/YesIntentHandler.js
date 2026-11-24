@@ -6,14 +6,13 @@ const messages = require('../messages');
  * */
 const YesIntentHandler = {
   canHandle(handlerInput) {
-    return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
-      && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.YesIntent';
+    return (
+      Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest' &&
+      Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.YesIntent'
+    );
   },
   handle(handlerInput) {
-    return handlerInput.responseBuilder
-      .speak(messages.YES)
-      .reprompt(messages.YES_REPROMPT)
-      .getResponse();
+    return handlerInput.responseBuilder.speak(messages.YES).reprompt(messages.YES_REPROMPT).getResponse();
   },
 };
 
