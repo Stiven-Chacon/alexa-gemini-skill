@@ -5,8 +5,9 @@
 const Alexa = require('ask-sdk-core');
 const { buildContainer } = require('./src/container');
 const {
-  LaunchRequestHandler,
+  createLaunchRequestHandler,
   createAskGeminiIntentHandler,
+  createResetConversationIntentHandler,
   YesIntentHandler,
   HelpIntentHandler,
   CancelAndStopIntentHandler,
@@ -16,13 +17,14 @@ const {
   ErrorHandler,
 } = require('./src/presentation/alexa/handlers');
 
-const { askQuestion } = buildContainer();
+const { askQuestion, resetConversation, conversationRepositoryFor } = buildContainer();
 
 // Order matters: handlers are evaluated top to bottom.
 exports.handler = Alexa.SkillBuilders.custom()
   .addRequestHandlers(
-    LaunchRequestHandler,
-    createAskGeminiIntentHandler({ askQuestion }),
+    createLaunchRequestHandler({ resetConversation, conversationRepositoryFor }),
+    createAskGeminiIntentHandler({ askQuestion, conversationRepositoryFor }),
+    createResetConversationIntentHandler({ resetConversation, conversationRepositoryFor }),
     YesIntentHandler,
     HelpIntentHandler,
     CancelAndStopIntentHandler,

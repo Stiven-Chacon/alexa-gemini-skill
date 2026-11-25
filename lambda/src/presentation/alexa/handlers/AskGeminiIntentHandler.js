@@ -6,9 +6,10 @@ const { QuestionErrorCode } = require('../../../domain/errors');
 /* *
  * Handles AskGeminiIntent: takes the free-form question captured in the
  * "question" slot, runs the AskQuestion use case and speaks the answer.
- * The session stays open so the user can keep asking.
+ * The session stays open so the user can keep asking, and the history of
+ * the session is sent as context so follow-up questions make sense.
  * */
-function createAskGeminiIntentHandler({ askQuestion, logger = console }) {
+function createAskGeminiIntentHandler({ askQuestion, conversationRepositoryFor, logger = console }) {
   return {
     canHandle(handlerInput) {
       return (
@@ -23,7 +24,8 @@ function createAskGeminiIntentHandler({ askQuestion, logger = console }) {
       let reprompt = messages.ASK_MORE;
 
       try {
-        const answer = await askQuestion.execute(question);
+        const conversationRepository = conversationRepositoryFor ? conversationRepositoryFor(handlerInput) : undefined;
+        const answer = await askQuestion.execute(question, conversationRepository);
         speakOutput = `${sanitizeSpeech(answer)} ${messages.ASK_MORE}`;
       } catch (error) {
         logger.log(`~~~~ AskQuestion error (${error.code}): ${error.message}`);

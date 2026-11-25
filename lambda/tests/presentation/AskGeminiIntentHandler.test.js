@@ -36,7 +36,7 @@ describe('AskGeminiIntentHandler', () => {
 
     const response = await handler.handle(buildInput('río más largo'));
 
-    expect(askQuestion.execute).toHaveBeenCalledWith('río más largo');
+    expect(askQuestion.execute).toHaveBeenCalledWith('río más largo', undefined);
     expect(response.speak).toBe(`El Amazonas. ${messages.ASK_MORE}`);
     expect(response.reprompt).toBe(messages.ASK_MORE);
   });
@@ -68,5 +68,50 @@ describe('AskGeminiIntentHandler', () => {
 
     const response = await handler.handle(buildInput('hola'));
     expect(response.speak).toBe(messages.AI_ERRORS.DEFAULT);
+  });
+
+  it('passes the conversation repository of this request to the use case', async () => {
+    const repository = { load: jest.fn(), save: jest.fn() };
+    const conversationRepositoryFor = jest.fn(() => repository);
+    const askQuestion = { execute: jest.fn().mockResolvedValue('El Amazonas.') };
+    const handler = createAskGeminiIntentHandler({ askQuestion, conversationRepositoryFor, logger: silentLogger });
+    const input = buildInput('río más largo');
+
+    await handler.handle(input);
+
+    expect(conversationRepositoryFor).toHaveBeenCalledWith(input);
+    expect(askQuestion.execute).toHaveBeenCalledWith('río más largo', repository);
+  });
+
+  it('remembers the previous question in the session (end to end with the real use case)', async () => {
+    const { AskQuestionUseCase } = require('../../src/application/use-cases/AskQuestionUseCase');
+    const {
+      SessionConversationRepository,
+    } = require('../../src/infrastructure/persistence/SessionConversationRepository');
+    const { buildAttributesManager } = require('../helpers/handlerInput');
+
+    const aiProvider = { ask: jest.fn().mockResolvedValueOnce('El Amazonas.').mockResolvedValueOnce('Unos 7 000 km.') };
+    const attributesManager = buildAttributesManager();
+    const handler = createAskGeminiIntentHandler({
+      askQuestion: new AskQuestionUseCase({ aiProvider }),
+      conversationRepositoryFor: (input) =>
+        new SessionConversationRepository({ attributesManager: input.attributesManager }),
+      logger: silentLogger,
+    });
+
+    const first = buildInput('río más largo');
+    first.attributesManager = attributesManager;
+    await handler.handle(first);
+
+    const second = buildInput('y cuánto mide');
+    second.attributesManager = attributesManager;
+    const response = await handler.handle(second);
+
+    expect(response.speak).toBe(`Unos 7 000 km. ${messages.ASK_MORE}`);
+    expect(aiProvider.ask.mock.calls[1][1].map((m) => m.toJSON())).toEqual([
+      { role: 'user', text: 'río más largo' },
+      { role: 'model', text: 'El Amazonas.' },
+    ]);
+    expect(attributesManager.getSessionAttributes().conversation).toHaveLength(4);
   });
 });
