@@ -8,6 +8,7 @@ module.exports = Object.freeze({
   NO_QUESTION: 'No escuché tu pregunta. ¿Qué quieres saber?',
   YES: 'Dale, ¿qué quieres saber?',
   YES_REPROMPT: '¿Qué quieres saber?',
+  RESET: 'Listo, olvidé lo que hablamos. Empecemos de nuevo, ¿qué quieres saber?',
   HELP: 'Puedes hacerme cualquier pregunta. Por ejemplo, di: pregunta cómo funciona la fotosíntesis, o explícame qué es la inteligencia artificial. ¿Qué quieres saber?',
   GOODBYE: '¡Hasta luego!',
   FALLBACK:
