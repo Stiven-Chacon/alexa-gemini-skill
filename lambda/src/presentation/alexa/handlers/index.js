@@ -1,6 +1,10 @@
 module.exports = {
   ...require('./LaunchRequestHandler'),
   ...require('./AskGeminiIntentHandler'),
+  ...require('./ResetConversationIntentHandler'),
+  ...require('./FollowUpIntentHandler'),
+  ...require('./RepeatIntentHandler'),
+  ...require('./SmallTalkIntentHandler'),
   ...require('./YesIntentHandler'),
   ...require('./HelpIntentHandler'),
   ...require('./CancelAndStopIntentHandler'),

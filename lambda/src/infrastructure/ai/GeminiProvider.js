@@ -12,6 +12,8 @@ const SYSTEM_PROMPT = [
   'Eres Nova y respondes por voz en Alexa, en español.',
   'Contesta directo con el dato concreto, en una a tres frases cortas, y si no lo sabes dilo sin inventar.',
   'Sin markdown, listas, emojis, símbolos ni enlaces.',
+  'Si la pregunta depende de lo que se habló antes en la conversación, usa ese contexto.',
+  'La pregunta viene de la voz y a veces llega sin sus primeras palabras, como qué es, cómo o cuál es la diferencia entre; deduce qué quiere saber el usuario.',
 ].join(' ');
 
 const DEFAULTS = Object.freeze({
@@ -25,6 +27,10 @@ const DEFAULTS = Object.freeze({
 // Reused across invocations while the Lambda container stays warm,
 // so TLS handshakes with Google are not repeated on every question.
 const sharedAgent = new https.Agent({ keepAlive: true, maxSockets: 10 });
+
+// Gemini uses the same role names as our Message entity: "user" and "model".
+const toContents = (history) =>
+  (Array.isArray(history) ? history : []).map((message) => ({ role: message.role, parts: [{ text: message.text }] }));
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -81,7 +87,9 @@ class GeminiProvider extends AIProvider {
     this.logger = logger;
   }
 
-  async ask(question) {
+  // history: previous Message entities (oldest first), sent as Gemini contents
+  // so the model can answer follow-up questions with context.
+  async ask(question, history = []) {
     if (!this.apiKey) {
       throw new AIProviderError(AIErrorCode.NO_API_KEY, 'Missing GEMINI_API_KEY');
     }
@@ -90,7 +98,7 @@ class GeminiProvider extends AIProvider {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent`;
     const body = {
       systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-      contents: [{ role: 'user', parts: [{ text: question.text }] }],
+      contents: [...toContents(history), { role: 'user', parts: [{ text: question.text }] }],
       generationConfig: { maxOutputTokens, temperature },
     };
 
