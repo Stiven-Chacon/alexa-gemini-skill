@@ -9,10 +9,16 @@ module.exports = Object.freeze({
   YES: 'Dale, ¿qué quieres saber?',
   YES_REPROMPT: '¿Qué quieres saber?',
   RESET: 'Listo, olvidé lo que hablamos. Empecemos de nuevo, ¿qué quieres saber?',
-  HELP: 'Puedes hacerme cualquier pregunta. Por ejemplo, di: pregunta cómo funciona la fotosíntesis, o explícame qué es la inteligencia artificial. ¿Qué quieres saber?',
+  HELP: 'Puedes preguntarme lo que quieras, por ejemplo: cómo funciona la fotosíntesis, o dame una receta de pasta. Después de una respuesta puedes decir cuéntame más, dame un ejemplo, explícalo más sencillo o repite. Para empezar de cero di nueva conversación. ¿Qué quieres saber?',
   GOODBYE: '¡Hasta luego!',
   FALLBACK:
-    'No entendí bien tu pregunta. Intenta empezar con la palabra pregunta, por ejemplo: pregunta cuál es el río más largo del mundo.',
+    'Perdona, no te entendí. Puedes preguntarme directamente, por ejemplo: cuál es el río más largo del mundo, o dame una receta de pasta. ¿Qué quieres saber?',
+  NO_CONTEXT: 'Todavía no hemos hablado de nada. ¿Qué quieres saber?',
+  NOTHING_TO_REPEAT: 'Todavía no te he dicho nada que repetir. ¿Qué quieres saber?',
+  GREETING: '¡Hola! Aquí estoy, lista para ayudarte. ¿Qué quieres saber?',
+  THANKS: '¡Con gusto! ¿Quieres preguntarme algo más?',
+  ABOUT:
+    'Soy Nova, una asistente de voz que responde tus preguntas con ayuda de la inteligencia artificial de Google Gemini. ¿Qué quieres saber?',
   UNHANDLED: 'No sé hacer eso todavía. Puedes preguntarme lo que quieras.',
   GENERIC_ERROR: 'Lo siento, tuve un problema para responder. Por favor, inténtalo de nuevo.',
   AI_ERRORS: Object.freeze({
