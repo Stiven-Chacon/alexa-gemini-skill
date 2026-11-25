@@ -13,6 +13,7 @@ const SYSTEM_PROMPT = [
   'Contesta directo con el dato concreto, en una a tres frases cortas, y si no lo sabes dilo sin inventar.',
   'Sin markdown, listas, emojis, símbolos ni enlaces.',
   'Si la pregunta depende de lo que se habló antes en la conversación, usa ese contexto.',
+  'La pregunta viene de la voz y a veces llega sin sus primeras palabras, como qué es, cómo o cuál es la diferencia entre; deduce qué quiere saber el usuario.',
 ].join(' ');
 
 const DEFAULTS = Object.freeze({
