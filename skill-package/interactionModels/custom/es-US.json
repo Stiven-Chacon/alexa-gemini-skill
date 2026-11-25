@@ -105,6 +105,29 @@
           ]
         },
         {
+          "name": "ResetConversationIntent",
+          "samples": [
+            "nueva conversación",
+            "empecemos una nueva conversación",
+            "quiero una nueva conversación",
+            "olvida todo",
+            "olvida todo lo anterior",
+            "olvida lo anterior",
+            "olvida lo que hablamos",
+            "empecemos de nuevo",
+            "empieza de nuevo",
+            "comencemos de nuevo",
+            "volvamos a empezar",
+            "borra la conversación",
+            "borra el historial",
+            "reinicia la conversación",
+            "reinicia la charla",
+            "cambiemos de tema",
+            "cambio de tema",
+            "otro tema"
+          ]
+        },
+        {
           "name": "AMAZON.YesIntent",
           "samples": [
             "sí por favor",
