@@ -32,18 +32,24 @@
       "isAvailableWorldwide": true,
       "locales": {
         "es-US": {
-          "description": "Sample Full Description",
+          "description": "Asistente Nova responde cualquier pregunta usando Google Gemini. Recuerda el contexto de la conversación, así que puedes hacer preguntas de seguimiento, pedir más detalles, un ejemplo, una explicación más simple o un resumen. También puede repetir la última respuesta y reiniciar la conversación cuando lo pidas.",
           "examplePhrases": [
-            "Alexa abre hola mundo",
-            "hola",
-            "ayuda"
+            "Alexa, abre asistente nova",
+            "¿cuál es la capital de Francia?",
+            "dame un ejemplo"
           ],
-          "keywords": [],
+          "keywords": [
+            "asistente",
+            "preguntas",
+            "inteligencia artificial",
+            "gemini",
+            "respuestas"
+          ],
           "name": "asistente nova",
-          "summary": "Sample Short Description"
+          "summary": "Asistente de voz que responde tus preguntas con inteligencia artificial de Google Gemini."
         }
       },
-      "testingInstructions": "Sample Testing Instructions."
+      "testingInstructions": "Abre la skill con \"Alexa, abre asistente nova\" y haz cualquier pregunta, por ejemplo \"¿cuál es la capital de Francia?\". Luego prueba un seguimiento como \"y cuántos habitantes tiene\", \"dame más detalles\" o \"repite\". Di \"empezar de nuevo\" para reiniciar la conversación."
     }
   }
 }
