@@ -8,9 +8,14 @@
 // from the questions asked later in the same session.
 const PROFILE_FORGOTTEN_KEY = 'profileForgotten';
 
+// Interests already loaded in this session (Launch or a later safe
+// profile read), so Fallback does not hit DynamoDB again.
+const PROFILE_INTERESTS_KEY = 'profileInterests';
+
 const PROFILE_TIMEOUTS = Object.freeze({
   greetingMs: 1500,
   updateMs: 3000,
+  readMs: 1500,
 });
 
 function getUserId(handlerInput) {
@@ -18,6 +23,28 @@ function getUserId(handlerInput) {
   const fromContext = envelope.context && envelope.context.System && envelope.context.System.user;
   const fromSession = envelope.session && envelope.session.user;
   return (fromContext && fromContext.userId) || (fromSession && fromSession.userId) || null;
+}
+
+function getSessionAttributes(handlerInput) {
+  return (
+    (handlerInput && handlerInput.attributesManager && handlerInput.attributesManager.getSessionAttributes()) || {}
+  );
+}
+
+function cacheProfileInterests(handlerInput, interests) {
+  if (!handlerInput || !handlerInput.attributesManager) return;
+  handlerInput.attributesManager.setSessionAttributes({
+    ...getSessionAttributes(handlerInput),
+    [PROFILE_INTERESTS_KEY]: Array.isArray(interests) ? [...interests] : [],
+  });
+}
+
+// Returns the cached list, or null when this session has not loaded the
+// profile yet. After "olvídame" it returns an empty list.
+function getCachedProfileInterests(handlerInput) {
+  const attributes = getSessionAttributes(handlerInput);
+  if (attributes[PROFILE_FORGOTTEN_KEY]) return [];
+  return Array.isArray(attributes[PROFILE_INTERESTS_KEY]) ? attributes[PROFILE_INTERESTS_KEY] : null;
 }
 
 // Runs task() with a time limit. Resolves with its result, or with
@@ -53,4 +80,13 @@ function updateProfileSafely({ updateProfile, conversationRepositoryFor }, handl
   });
 }
 
-module.exports = { getUserId, runSafely, updateProfileSafely, PROFILE_FORGOTTEN_KEY, PROFILE_TIMEOUTS };
+module.exports = {
+  getUserId,
+  runSafely,
+  updateProfileSafely,
+  cacheProfileInterests,
+  getCachedProfileInterests,
+  PROFILE_FORGOTTEN_KEY,
+  PROFILE_INTERESTS_KEY,
+  PROFILE_TIMEOUTS,
+};

@@ -2,7 +2,10 @@ const {
   getUserId,
   runSafely,
   updateProfileSafely,
+  cacheProfileInterests,
+  getCachedProfileInterests,
   PROFILE_FORGOTTEN_KEY,
+  PROFILE_INTERESTS_KEY,
 } = require('../../src/presentation/alexa/user');
 const { buildHandlerInput } = require('../helpers/handlerInput');
 
@@ -85,5 +88,32 @@ describe('updateProfileSafely', () => {
     await expect(
       updateProfileSafely({ updateProfile, conversationRepositoryFor }, input, { logger: silentLogger })
     ).resolves.toBeNull();
+  });
+});
+
+describe('session interest cache', () => {
+  it('stores a copy of the interests in the session', () => {
+    const interests = ['fútbol', 'cocina'];
+    const input = buildHandlerInput({ sessionAttributes: { other: 'value' } });
+
+    cacheProfileInterests(input, interests);
+    interests.push('cine');
+
+    expect(input.attributesManager.getSessionAttributes()).toEqual({
+      other: 'value',
+      [PROFILE_INTERESTS_KEY]: ['fútbol', 'cocina'],
+    });
+    expect(getCachedProfileInterests(input)).toEqual(['fútbol', 'cocina']);
+  });
+
+  it('returns null when the profile has not been loaded yet', () => {
+    expect(getCachedProfileInterests(buildHandlerInput())).toBeNull();
+  });
+
+  it('returns an empty list after "olvídame", even if interests were cached', () => {
+    const input = buildHandlerInput({
+      sessionAttributes: { [PROFILE_FORGOTTEN_KEY]: true, [PROFILE_INTERESTS_KEY]: ['fútbol'] },
+    });
+    expect(getCachedProfileInterests(input)).toEqual([]);
   });
 });

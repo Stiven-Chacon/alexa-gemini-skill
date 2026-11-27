@@ -1,7 +1,7 @@
 const Alexa = require('ask-sdk-core');
 const messages = require('../messages');
 const { sanitizeSpeech } = require('../speech');
-const { getUserId, runSafely, PROFILE_TIMEOUTS } = require('../user');
+const { getUserId, runSafely, cacheProfileInterests, PROFILE_TIMEOUTS } = require('../user');
 
 const NO_PROFILE = Object.freeze({ isReturning: false, interests: [] });
 
@@ -16,6 +16,8 @@ function greetingFor({ isReturning, interests }) {
  * Opening the skill always starts a fresh conversation. When the user
  * profile is wired, the visit is registered and returning users get a
  * personalized greeting. Any profile failure falls back to the normal one.
+ * Successful reads are cached in the session so later turns (Fallback)
+ * can reuse the interests without another DynamoDB read.
  * */
 function createLaunchRequestHandler({ resetConversation, conversationRepositoryFor, getGreeting } = {}) {
   return {
@@ -30,11 +32,15 @@ function createLaunchRequestHandler({ resetConversation, conversationRepositoryF
       let greeting = NO_PROFILE;
       const userId = getUserId(handlerInput);
       if (getGreeting && userId) {
-        greeting = await runSafely(() => getGreeting.execute(userId), {
+        const result = await runSafely(() => getGreeting.execute(userId), {
           timeoutMs: PROFILE_TIMEOUTS.greetingMs,
-          fallback: NO_PROFILE,
+          fallback: null,
           label: 'GetGreeting',
         });
+        if (result) {
+          greeting = result;
+          cacheProfileInterests(handlerInput, result.interests);
+        }
       }
 
       return handlerInput.responseBuilder
