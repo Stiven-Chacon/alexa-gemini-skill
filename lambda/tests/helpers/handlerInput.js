@@ -14,6 +14,7 @@ function buildHandlerInput({
   slots,
   reason = 'USER_INITIATED',
   sessionAttributes = {},
+  userId,
 } = {}) {
   const response = {};
   const responseBuilder = {
@@ -40,8 +41,13 @@ function buildHandlerInput({
     request.reason = reason;
   }
 
+  const requestEnvelope = { request };
+  if (userId) {
+    requestEnvelope.context = { System: { user: { userId } } };
+  }
+
   return {
-    requestEnvelope: { request },
+    requestEnvelope,
     responseBuilder,
     attributesManager: buildAttributesManager(sessionAttributes),
     response,

@@ -4,12 +4,20 @@
 module.exports = Object.freeze({
   LAUNCH: 'Hola, soy Nova. ¿Qué quieres saber?',
   LAUNCH_REPROMPT: 'Puedes preguntarme lo que quieras.',
+  LAUNCH_RETURNING: '¡Hola de nuevo! Soy Nova. ¿Qué quieres saber hoy?',
+  LAUNCH_WITH_INTEREST: (topic) =>
+    `¡Hola de nuevo! La última vez hablamos de ${topic}. ¿Seguimos con eso o quieres saber otra cosa?`,
   ASK_MORE: '¿Quieres preguntarme algo más?',
   NO_QUESTION: 'No escuché tu pregunta. ¿Qué quieres saber?',
   YES: 'Dale, ¿qué quieres saber?',
   YES_REPROMPT: '¿Qué quieres saber?',
   RESET: 'Listo, olvidé lo que hablamos. Empecemos de nuevo, ¿qué quieres saber?',
   HELP: 'Puedes preguntarme lo que quieras, por ejemplo: cómo funciona la fotosíntesis, o dame una receta de pasta. Después de una respuesta puedes decir cuéntame más, dame un ejemplo, explícalo más sencillo o repite. Para empezar de cero di nueva conversación. ¿Qué quieres saber?',
+  FORGET_ME_CONFIRM: '¿Seguro que quieres que olvide todo lo que sé de ti?',
+  FORGET_ME_REPROMPT: 'Dime sí para borrar lo que sé de ti, o no para dejarlo como está.',
+  FORGET_ME_DONE: 'Listo, olvidé todo lo que sabía de ti. ¿Qué quieres saber?',
+  FORGET_ME_CANCELLED: 'Está bien, no borré nada. ¿Qué quieres saber?',
+  FORGET_ME_ERROR: 'No pude borrar tus datos en este momento. Inténtalo de nuevo más tarde. ¿Qué quieres saber?',
   GOODBYE: '¡Hasta luego!',
   FALLBACK:
     'Perdona, no te entendí. Puedes preguntarme directamente, por ejemplo: cuál es el río más largo del mundo, o dame una receta de pasta. ¿Qué quieres saber?',
