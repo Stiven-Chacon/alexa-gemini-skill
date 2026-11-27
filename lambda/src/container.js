@@ -15,6 +15,7 @@ const { InMemoryUserProfileRepository } = require('./infrastructure/persistence/
 const { AskQuestionUseCase } = require('./application/use-cases/AskQuestionUseCase');
 const { ResetConversationUseCase } = require('./application/use-cases/ResetConversationUseCase');
 const { GetGreetingUseCase } = require('./application/use-cases/GetGreetingUseCase');
+const { GetProfileUseCase } = require('./application/use-cases/GetProfileUseCase');
 const { UpdateProfileUseCase } = require('./application/use-cases/UpdateProfileUseCase');
 const { ForgetMeUseCase } = require('./application/use-cases/ForgetMeUseCase');
 
@@ -36,6 +37,7 @@ function buildContainer({ logger = console } = {}) {
 
   const profileRepository = buildProfileRepository(config, logger);
   const getGreeting = new GetGreetingUseCase({ profileRepository });
+  const getProfile = new GetProfileUseCase({ profileRepository });
   const updateProfile = new UpdateProfileUseCase({ aiProvider, profileRepository });
   const forgetMe = new ForgetMeUseCase({ profileRepository });
 
@@ -47,6 +49,7 @@ function buildContainer({ logger = console } = {}) {
     conversationRepositoryFor,
     profileRepository,
     getGreeting,
+    getProfile,
     updateProfile,
     forgetMe,
   };

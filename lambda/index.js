@@ -17,13 +17,13 @@ const {
   SmallTalkIntentHandler,
   YesIntentHandler,
   HelpIntentHandler,
-  FallbackIntentHandler,
+  createFallbackIntentHandler,
   UnhandledIntentHandler,
   ErrorHandler,
 } = require('./src/presentation/alexa/handlers');
 const { PendingConfirmationInterceptor } = require('./src/presentation/alexa/interceptors');
 
-const { askQuestion, resetConversation, conversationRepositoryFor, getGreeting, updateProfile, forgetMe } =
+const { askQuestion, resetConversation, conversationRepositoryFor, getGreeting, getProfile, updateProfile, forgetMe } =
   buildContainer();
 
 // Order matters: handlers are evaluated top to bottom.
@@ -43,7 +43,7 @@ exports.handler = Alexa.SkillBuilders.custom()
     YesIntentHandler,
     HelpIntentHandler,
     createCancelAndStopIntentHandler({ updateProfile, conversationRepositoryFor }),
-    FallbackIntentHandler,
+    createFallbackIntentHandler({ getProfile }),
     createSessionEndedRequestHandler({ updateProfile, conversationRepositoryFor }),
     UnhandledIntentHandler
   )

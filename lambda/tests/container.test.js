@@ -16,6 +16,7 @@ const { SessionConversationRepository } = require('../src/infrastructure/persist
 const { DynamoUserProfileRepository } = require('../src/infrastructure/persistence/DynamoUserProfileRepository');
 const { InMemoryUserProfileRepository } = require('../src/infrastructure/persistence/InMemoryUserProfileRepository');
 const { GetGreetingUseCase } = require('../src/application/use-cases/GetGreetingUseCase');
+const { GetProfileUseCase } = require('../src/application/use-cases/GetProfileUseCase');
 const { UpdateProfileUseCase } = require('../src/application/use-cases/UpdateProfileUseCase');
 const { ForgetMeUseCase } = require('../src/application/use-cases/ForgetMeUseCase');
 const { buildAttributesManager } = require('./helpers/handlerInput');
@@ -61,10 +62,12 @@ describe('buildContainer', () => {
 
     expect(container.profileRepository).toBeInstanceOf(InMemoryUserProfileRepository);
     expect(container.getGreeting).toBeInstanceOf(GetGreetingUseCase);
+    expect(container.getProfile).toBeInstanceOf(GetProfileUseCase);
     expect(container.updateProfile).toBeInstanceOf(UpdateProfileUseCase);
     expect(container.updateProfile.aiProvider).toBe(container.aiProvider);
     expect(container.forgetMe).toBeInstanceOf(ForgetMeUseCase);
     expect(container.getGreeting.profileRepository).toBe(container.profileRepository);
+    expect(container.getProfile.profileRepository).toBe(container.profileRepository);
     expect(logger.log).toHaveBeenCalledWith(expect.stringContaining('in memory'));
   });
 

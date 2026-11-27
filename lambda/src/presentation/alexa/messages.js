@@ -21,6 +21,8 @@ module.exports = Object.freeze({
   GOODBYE: '¡Hasta luego!',
   FALLBACK:
     'Perdona, no te entendí. Puedes preguntarme directamente, por ejemplo: cuál es el río más largo del mundo, o dame una receta de pasta. ¿Qué quieres saber?',
+  FALLBACK_WITH_INTEREST: (topic) =>
+    `Perdona, no te entendí. Como te interesa ${topic}, puedes preguntarme algo sobre ${topic}. O pregúntame lo que quieras. ¿Qué quieres saber?`,
   NO_CONTEXT: 'Todavía no hemos hablado de nada. ¿Qué quieres saber?',
   NOTHING_TO_REPEAT: 'Todavía no te he dicho nada que repetir. ¿Qué quieres saber?',
   GREETING: '¡Hola! Aquí estoy, lista para ayudarte. ¿Qué quieres saber?',

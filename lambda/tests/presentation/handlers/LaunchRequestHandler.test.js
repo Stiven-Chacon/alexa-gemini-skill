@@ -3,6 +3,7 @@ const {
   createLaunchRequestHandler,
 } = require('../../../src/presentation/alexa/handlers/LaunchRequestHandler');
 const messages = require('../../../src/presentation/alexa/messages');
+const { PROFILE_INTERESTS_KEY } = require('../../../src/presentation/alexa/user');
 const { buildHandlerInput } = require('../../helpers/handlerInput');
 
 const withGreeting = (execute) => createLaunchRequestHandler({ getGreeting: { execute } });
@@ -57,18 +58,23 @@ describe('LaunchRequestHandler with the user profile', () => {
     expect(response.speak).toBe(messages.LAUNCH_WITH_INTEREST('astronomía'));
     expect(response.speak).toContain('astronomía');
     expect(response.reprompt).toBe(messages.LAUNCH_REPROMPT);
+    expect(input.attributesManager.getSessionAttributes()[PROFILE_INTERESTS_KEY]).toEqual(['astronomía', 'cocina']);
   });
 
   it('welcomes back a returning user without interests', async () => {
     const execute = jest.fn().mockResolvedValue({ isReturning: true, interests: [] });
-    const response = await withGreeting(execute).handle(buildHandlerInput({ type: 'LaunchRequest', userId: 'user-1' }));
+    const input = buildHandlerInput({ type: 'LaunchRequest', userId: 'user-1' });
+    const response = await withGreeting(execute).handle(input);
     expect(response.speak).toBe(messages.LAUNCH_RETURNING);
+    expect(input.attributesManager.getSessionAttributes()[PROFILE_INTERESTS_KEY]).toEqual([]);
   });
 
   it('uses the normal greeting for a first visit', async () => {
     const execute = jest.fn().mockResolvedValue({ isReturning: false, interests: [] });
-    const response = await withGreeting(execute).handle(buildHandlerInput({ type: 'LaunchRequest', userId: 'user-1' }));
+    const input = buildHandlerInput({ type: 'LaunchRequest', userId: 'user-1' });
+    const response = await withGreeting(execute).handle(input);
     expect(response.speak).toBe(messages.LAUNCH);
+    expect(input.attributesManager.getSessionAttributes()[PROFILE_INTERESTS_KEY]).toEqual([]);
   });
 
   it('removes symbols from the topic before speaking it', async () => {
@@ -79,18 +85,22 @@ describe('LaunchRequestHandler with the user profile', () => {
 
   it('falls back to the normal greeting when the profile fails', async () => {
     const execute = jest.fn().mockRejectedValue(new Error('dynamo down'));
-    const response = await withGreeting(execute).handle(buildHandlerInput({ type: 'LaunchRequest', userId: 'user-1' }));
+    const input = buildHandlerInput({ type: 'LaunchRequest', userId: 'user-1' });
+    const response = await withGreeting(execute).handle(input);
     expect(response.speak).toBe(messages.LAUNCH);
+    expect(input.attributesManager.getSessionAttributes()[PROFILE_INTERESTS_KEY]).toBeUndefined();
   });
 
   it('falls back to the normal greeting when the profile is too slow', async () => {
     jest.useFakeTimers();
     const execute = jest.fn(() => new Promise(() => {}));
+    const input = buildHandlerInput({ type: 'LaunchRequest', userId: 'user-1' });
 
-    const promise = withGreeting(execute).handle(buildHandlerInput({ type: 'LaunchRequest', userId: 'user-1' }));
+    const promise = withGreeting(execute).handle(input);
     await jest.advanceTimersByTimeAsync(1500);
 
     expect((await promise).speak).toBe(messages.LAUNCH);
+    expect(input.attributesManager.getSessionAttributes()[PROFILE_INTERESTS_KEY]).toBeUndefined();
   });
 
   it('does not read the profile without a userId', async () => {
