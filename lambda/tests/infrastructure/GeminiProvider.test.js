@@ -1,6 +1,11 @@
 const https = require('https');
 const { EventEmitter } = require('events');
-const { GeminiProvider, SYSTEM_PROMPT } = require('../../src/infrastructure/ai/GeminiProvider');
+const {
+  GeminiProvider,
+  SYSTEM_PROMPT,
+  INTERESTS_PROMPT,
+  parseInterests,
+} = require('../../src/infrastructure/ai/GeminiProvider');
 const { AIErrorCode } = require('../../src/domain/errors');
 
 const TEST_KEY = 'test-gemini-key';
@@ -264,5 +269,111 @@ describe('GeminiProvider', () => {
       code: AIErrorCode.API_ERROR,
       message: 'socket hang up',
     });
+  });
+});
+
+describe('GeminiProvider.extractInterests', () => {
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
+    silentLogger.log.mockClear();
+  });
+
+  it('sends the questions with the interests prompt and returns the topics', async () => {
+    const { calls } = mockHttps({ status: 200, json: successJson('["Astronomía", "cocina"]') });
+
+    const interests = await makeProvider().extractInterests(['qué es un agujero negro', '  receta de arepas ']);
+
+    expect(interests).toEqual(['astronomía', 'cocina']);
+    expect(calls).toHaveLength(1);
+    expect(calls[0].payload.systemInstruction).toEqual({ parts: [{ text: INTERESTS_PROMPT }] });
+    expect(calls[0].payload.contents).toEqual([
+      { role: 'user', parts: [{ text: '- qué es un agujero negro\n- receta de arepas' }] },
+    ]);
+    expect(calls[0].payload.generationConfig).toMatchObject({ responseMimeType: 'application/json' });
+  });
+
+  it('only sends the last 10 valid questions', async () => {
+    const { calls } = mockHttps({ status: 200, json: successJson('[]') });
+    const questions = ['', null, ...Array.from({ length: 12 }, (_, index) => `pregunta ${index + 1}`)];
+
+    await makeProvider().extractInterests(questions);
+
+    const lines = calls[0].payload.contents[0].parts[0].text.split('\n');
+    expect(lines).toHaveLength(10);
+    expect(lines[0]).toBe('- pregunta 3');
+  });
+
+  it.each([[[]], [undefined], [['', '   ']]])(
+    'returns [] without calling Gemini when there are no questions (%p)',
+    async (questions) => {
+      const request = jest.spyOn(https, 'request');
+      await expect(makeProvider().extractInterests(questions)).resolves.toEqual([]);
+      expect(request).not.toHaveBeenCalled();
+    }
+  );
+
+  it('returns [] without calling Gemini when the api key is missing', async () => {
+    const request = jest.spyOn(https, 'request');
+    await expect(makeProvider({ apiKey: '' }).extractInterests(['hola'])).resolves.toEqual([]);
+    expect(request).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['an API error', { status: 500, json: { error: { message: 'boom' } } }],
+    ['invalid JSON', { status: 200, raw: '<html>' }],
+    ['an empty answer', { status: 200, json: {} }],
+    ['text that is not a list', { status: 200, json: successJson('me gusta la astronomía') }],
+    ['a network failure', { networkError: new Error('socket hang up') }],
+  ])('returns [] on %s', async (_label, response) => {
+    mockHttps(response);
+    await expect(makeProvider().extractInterests(['hola'])).resolves.toEqual([]);
+  });
+
+  it('returns [] when Gemini takes longer than the interests budget', async () => {
+    jest.useFakeTimers();
+    mockHttps({ hang: true });
+
+    const promise = makeProvider({ options: { interestsBudgetMs: 1000 } }).extractInterests(['hola']);
+    await jest.advanceTimersByTimeAsync(1000);
+
+    await expect(promise).resolves.toEqual([]);
+  });
+
+  it('retries once on 503 like ask()', async () => {
+    jest.useFakeTimers();
+    const { calls } = mockHttps([
+      { status: 503, json: { error: { message: 'unavailable' } } },
+      { status: 200, json: successJson('["cine"]') },
+    ]);
+
+    const promise = makeProvider({ options: { interestsBudgetMs: 3000 } }).extractInterests(['mejores películas']);
+    await jest.advanceTimersByTimeAsync(300);
+
+    await expect(promise).resolves.toEqual(['cine']);
+    expect(calls).toHaveLength(2);
+  });
+});
+
+describe('parseInterests', () => {
+  it('reads a plain JSON array', () => {
+    expect(parseInterests('["historia", "música"]')).toEqual(['historia', 'música']);
+  });
+
+  it('reads an array inside code fences or extra text', () => {
+    expect(parseInterests('```json\n["Cine"]\n```')).toEqual(['cine']);
+    expect(parseInterests('Temas: ["deportes"] listo')).toEqual(['deportes']);
+  });
+
+  it('keeps at most 3 clean, unique strings', () => {
+    expect(parseInterests('["  Cine ", "cine", 7, null, "", "a", "b", "c"]')).toEqual(['cine', 'a', 'b']);
+  });
+
+  it('drops topics longer than 40 characters', () => {
+    expect(parseInterests(JSON.stringify(['x'.repeat(41), 'arte']))).toEqual(['arte']);
+  });
+
+  it.each([undefined, '', 'sin lista', '[no es json]', '{"a": 1}', '] al revés ['])('returns [] for %p', (text) => {
+    expect(parseInterests(text)).toEqual([]);
   });
 });

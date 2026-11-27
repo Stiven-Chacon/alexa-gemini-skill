@@ -29,6 +29,9 @@ function getConfig({ envPath = ENV_PATH } = {}) {
   cachedConfig = Object.freeze({
     geminiApiKey: process.env.GEMINI_API_KEY || file.GEMINI_API_KEY,
     geminiModel: process.env.GEMINI_MODEL || file.GEMINI_MODEL || DEFAULT_GEMINI_MODEL,
+    // Provided by Alexa-hosted skills. Without it the user profile is kept in memory.
+    profileTableName: process.env.DYNAMODB_PERSISTENCE_TABLE_NAME || file.DYNAMODB_PERSISTENCE_TABLE_NAME,
+    profileTableRegion: process.env.DYNAMODB_PERSISTENCE_REGION || file.DYNAMODB_PERSISTENCE_REGION,
   });
   return cachedConfig;
 }

@@ -53,7 +53,7 @@ describe('parseEnvFile', () => {
 });
 
 describe('getConfig', () => {
-  const envKeys = ['GEMINI_API_KEY', 'GEMINI_MODEL'];
+  const envKeys = ['GEMINI_API_KEY', 'GEMINI_MODEL', 'DYNAMODB_PERSISTENCE_TABLE_NAME', 'DYNAMODB_PERSISTENCE_REGION'];
   const previous = {};
 
   beforeEach(() => {
@@ -117,5 +117,20 @@ describe('getConfig', () => {
     expect(third).not.toBe(first);
     expect(third.geminiModel).toBe('after-reset');
     expect(fs.readFileSync).toHaveBeenCalledTimes(2);
+  });
+
+  it('reads the DynamoDB table name and region provided by Alexa-hosted', () => {
+    process.env.DYNAMODB_PERSISTENCE_TABLE_NAME = 'nova-table';
+    process.env.DYNAMODB_PERSISTENCE_REGION = 'us-east-1';
+
+    const config = getConfig({ envPath: 'fake.env' });
+    expect(config.profileTableName).toBe('nova-table');
+    expect(config.profileTableRegion).toBe('us-east-1');
+  });
+
+  it('leaves the profile table undefined when it is not configured', () => {
+    const config = getConfig({ envPath: 'fake.env' });
+    expect(config.profileTableName).toBeUndefined();
+    expect(config.profileTableRegion).toBeUndefined();
   });
 });
