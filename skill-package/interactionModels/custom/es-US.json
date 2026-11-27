@@ -438,6 +438,33 @@
           ]
         },
         {
+          "name": "ForgetMeIntent",
+          "samples": [
+            "olvídame",
+            "olvídate de mí",
+            "quiero que me olvides",
+            "olvida lo que sabes de mí",
+            "olvida todo lo que sabes de mí",
+            "olvida quién soy",
+            "olvida mis gustos",
+            "olvida mis intereses",
+            "borra mis datos",
+            "borra mis datos personales",
+            "borra lo que sabes de mí",
+            "borra todo lo que sabes de mí",
+            "borra mi perfil",
+            "borra mis intereses",
+            "elimina mis datos",
+            "elimina mi perfil",
+            "elimina mi información",
+            "borra mi información",
+            "no quiero que me recuerdes",
+            "deja de recordarme",
+            "no guardes mis datos",
+            "no guardes nada de mí"
+          ]
+        },
+        {
           "name": "MoreDetailsIntent",
           "samples": [
             "cuéntame más",
